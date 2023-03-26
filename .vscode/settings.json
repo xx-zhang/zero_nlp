@@ -115,22 +115,22 @@
     "eslint"
   ],
   // ESLint config: https://github.com/antfu/eslint-config
-  "eslint.codeAction.showDocumentation": {
-    "enable": true
-  },
-  "eslint.quiet": true,
-  "eslint.validate": [
-    "javascript",
-    "typescript",
-    "javascriptreact",
-    "typescriptreact",
-    "vue",
-    "html",
-    "markdown",
-    "json",
-    "jsonc",
-    "json5"
-  ],
+  // "eslint.codeAction.showDocumentation": {
+  //   "enable": true
+  // },
+  // "eslint.quiet": true,
+  // "eslint.validate": [
+  //   "javascript",
+  //   "typescript",
+  //   "javascriptreact",
+  //   "typescriptreact",
+  //   "vue",
+  //   "html",
+  //   "markdown",
+  //   "json",
+  //   "jsonc",
+  //   "json5"
+  // ],
   "github.copilot.enable": {
     "*": true,
     "markdown": true,

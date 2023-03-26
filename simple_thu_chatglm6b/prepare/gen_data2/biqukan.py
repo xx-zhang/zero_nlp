@@ -8,93 +8,87 @@ import time
 import sys
 import types
 
-"""
-Reffer: https://github.com/Jack-Cherish/python-spider/blob/master/biqukan.py
-类说明:下载《笔趣看》网小说: url:https://www.biqukan.com/
-Parameters:
-	target - 《笔趣看》网指定的小说目录地址(string)
-Returns:
-	无
-Modify:
-	2017-05-06
-"""
 
 BIQUKAN_SITE_HOST = "https://www.biqukan8.cc/"
 COMMON_HEADERS = {'User-Agent':'Mozilla/5.0 (Linux; Android 4.1.1; Nexus 7 Build/JRO03D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166  Safari/535.19',}
 
 def fetch_request(target_url):
-    target_req = request.Request(url=target_url, headers=COMMON_HEADERS)
-    target_response = request.urlopen(target_req)
-    target_html = target_response.read().decode('gbk', 'ignore')
-    return BeautifulSoup(target_html, 'lxml')
-    
+  target_req = request.Request(url=target_url, headers=COMMON_HEADERS)
+  target_response = request.urlopen(target_req)
+  target_html = target_response.read().decode('gbk', 'ignore')
+  return BeautifulSoup(target_html, 'lxml')
 
 
-def get_novel_list():
-    url = "http://m.biqu520.net/sort-1-220/"
+def get_novel_pager_list(cate_id=1, pager=2):
+    url = f"http://m.biqu520.net/sort-{cate_id}-{pager}/"
+    temp_soup = fetch_request(url)
+    novel_list_soup = temp_soup.find_all('p', class_ = 'line')
+    temp_res = []
+    if novel_list_soup:
+        for x in novel_list_soup:
+            partern = '<p class="line"><a href=".*?">\[(.*?)\]</a><a.*?href="/info-(\d+)/".*?>(.*?)</a>/<a href="/author/(.*?)">.*?</a></p>'
+            match_data = re.match(partern, str(x))
+            if match_data:
+                temp_data = dict(
+                    novel_category = match_data.group(1), 
+                    # novel_url = match_data.group(2),
+                    novel_id = match_data.group(2),
+                    novel_name = match_data.group(3), 
+                    novel_author = match_data.group(4), 
+                )
+                temp_res.append(temp_data)
+    return temp_res
 
 
-    pass 
+def fetch_chapter_from_url(pager=1, novel_id=33044, get_max_pager=False):
+    num_per_page = 20
+    url = f"http://m.biqu520.net/wapbook-{novel_id}_{pager}/"
+    temp_soup = fetch_request(url)
+    # print(temp_soup)
+    __pager_soup = temp_soup.find_all('div', class_ = 'page')
+    pager_matcher = re.match(".*\(第(\d+)/(\d+)页\)当前20条/页.*", str(__pager_soup))
+    max_pager = int(pager_matcher.group(2))
+    if get_max_pager:
+        return max_pager
+    cur_pager = int(pager_matcher.group(1))
+    # if cur_pager != max_pager:
+    #     have_next = True 
+    chapter_soup = temp_soup.find_all('ul', class_ = 'chapter')[0]
+    chapter_list = [] 
+
+    partern = '<li><a href="(/wapbook-\d+-\d+/)">(.*?)<span></span></a></li>'
+    matched_data = re.findall(partern, str(chapter_soup))
+    index = 1 
+    for x in matched_data:
+        cur_chaper_number = cur_pager* num_per_page + index 
+        temp_data = dict(
+            chapter_name=x[1], 
+            chapter_url=x[0],
+            chapter_num=cur_chaper_number)
+        index += 1
+        chapter_list.append(temp_data)
+    return chapter_list
 
 
-def get_download_url(target_url):
-    # charter = re.compile(u'[第弟](.+)章', re.IGNORECASE)
-    listmain_soup = fetch_request(target_url)
-    chapters = listmain_soup.find_all('div',class_ = 'listmain')
-
-    download_soup = BeautifulSoup(str(chapters), 'lxml')
-    # novel_name = str(download_soup.dl.dt).split("》")[0][5:]
-    novel_name = re.findall("《(.*?)》", str(download_soup.dl.dt))[0]
-    flag_name = "《" + novel_name + "》" + "正文卷"
-    numbers = (len(download_soup.dl.contents) - 1) / 2 - 8
-
-    info = listmain_soup.find_all('div', class_ = 'small')
-    summary = listmain_soup.find_all('div', class_ = 'intro')
-
-    download_dict = collections.OrderedDict()
-    begin_flag = False
-    numbers = 1
-    for child in download_soup.dl.children:
-        if child != '\n':
-            if child.string == u"%s" % flag_name:
-                begin_flag = True
-            if begin_flag == True and child.a != None:
-                download_url = BIQUKAN_SITE_HOST + child.a.get('href')
-                download_name = child.string
-                # print(download_name)
-                try:
-                    name = re.findall("[第弟](.*)[张章]", download_name)[0]
-                    dict_key = f'第{str(numbers)}章-{name}'
-                except Exception as e:
-                    dict_key = download_name
-                if name:
-                    download_dict[dict_key] = {"download_url": download_url, "numbers": numbers}
-                    numbers += 1
-
-    return novel_name, info, summary, download_dict
-
-
-def downloader(url):
-    download_req = request.Request(url = url, headers = COMMON_HEADERS)
-    download_response = request.urlopen(download_req)
-    download_html = download_response.read().decode('gbk','ignore')
-    soup_texts = BeautifulSoup(download_html, 'lxml')
-    texts = soup_texts.find_all(id = 'content', class_ = 'showtxt')
-    soup_text = BeautifulSoup(str(texts), 'lxml').div.text.replace('\xa0','')
-    return soup_text
-    
-
-def download_txt_url(target_url):
-    novel_name, info, summary, download_dict = get_download_url(target_url)
-    print(download_dict)
+def get_chapter_content(chapter_url):
+    url = f"http://m.biqu520.net{chapter_url}"
+    # print(url)
+    temp_soup = fetch_request(url)
+    text_soup = temp_soup.find_all('div', class_ = 'text')
+    return str(text_soup)
 
 
 if __name__ == "__main__":
     # print("\n\t\t欢迎使用《笔趣看》小说下载小工具\n\n\t\t作者:Jack-Cui\t时间:2017-05-06\n")
     print("*************************************************************************")
-    
-    #小说地址
-    # target_url = str(input("请输入小说目录下载地址:\n"))
-    target_url = "https://m.biqukan8.cc/24344_24344372/"
-
-    download_txt_url(target_url) 
+    chapter_list = fetch_chapter_from_url(pager=1, novel_id=33044, get_max_pager=False)
+    for x in chapter_list:
+        # print(x)
+        chapter_url = x["chapter_url"]
+        chapter_content = get_chapter_content(chapter_url=chapter_url)
+        print(chapter_content)
+        break 
+    # x = '<p class="line"><a href="#">[玄幻小说]</a><a class="blue" href="/info-46632/">开挂闯异界</a>/<a href="/author/王不偷">王不偷</a></p>'
+    # partern = '<p class="line"><a href=".*?">\[(.*?)\]</a><a.*?href="(.*?)".*?>(.*?)</a>/<a href="/author/(.*?)">.*?</a></p>'
+    # print(str(x))
+    # print(re.findall(partern, str(x)))
