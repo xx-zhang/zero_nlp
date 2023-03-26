@@ -13,7 +13,7 @@
   "editor.fontLigatures": "'ss01', 'ss02', 'ss03', 'ss06', 'zero'",
 
   // Editor
-  "editor.fontSize": 15,
+  "editor.fontSize": 17,
   "editor.codeLensFontSize": 0,
   "editor.accessibilitySupport": "off",
   "editor.cursorSmoothCaretAnimation": "on",
