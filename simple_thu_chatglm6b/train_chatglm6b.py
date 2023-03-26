@@ -36,8 +36,10 @@ train_file_list = [i for i in all_file_list if i not in test_file_list]
 # len(train_file_list), len(test_file_list)
 
 # %%
-raw_datasets = load_dataset("csv", data_files={
-                            'train': train_file_list, 'valid': test_file_list}, cache_dir="cache_data")
+raw_datasets = load_dataset("csv", 
+    data_files={'train': train_file_list, 'valid': test_file_list}, 
+    cache_dir="cache_data"
+    )
 
 
 # %%
@@ -58,7 +60,7 @@ def tokenize(element):
             input_batch.append(input_ids)
     return {"input_ids": input_batch}
 
-
+# TODO 开始分词和统计
 tokenized_datasets = raw_datasets.map(
     tokenize, batched=True, remove_columns=raw_datasets["train"].column_names
 )
@@ -68,7 +70,7 @@ tokenized_datasets
 data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
 
 # %%
-
+# TODO 模型调参和数据输出
 args = TrainingArguments(
     output_dir="test003",
     per_device_train_batch_size=1, # 如果在24G显存上的显卡，可以开到4
