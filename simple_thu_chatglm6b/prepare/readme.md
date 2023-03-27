@@ -63,4 +63,37 @@ docker run -d --name=aliyundrive-webdav --restart=unless-stopped -p 8080:8080 \
 
 ```
 
+## 使用模型
+- 模型下需要加载配置文件；覆盖到 `checkpoint-500`下
+- 接着进行操作就行了。
 
+```bash
+
+{
+  "_name_or_path": "THUDM/chatglm-6b",
+  "architectures": [
+    "ChatGLMModel"
+  ],
+  "auto_map": {
+    "AutoConfig": "configuration_chatglm.ChatGLMConfig",
+    "AutoModel": "modeling_chatglm.ChatGLMForConditionalGeneration",
+    "AutoModelForSeq2SeqLM": "modeling_chatglm.ChatGLMForConditionalGeneration"
+  },
+  "bos_token_id": 150004,
+  "eos_token_id": 150005,
+  "hidden_size": 4096,
+  "inner_hidden_size": 16384,
+  "layernorm_epsilon": 1e-05,
+  "max_sequence_length": 2048,
+  "model_type": "chatglm",
+  "num_attention_heads": 32,
+  "num_layers": 28,
+  "position_encoding_2d": true,
+  "torch_dtype": "float16",
+  "transformers_version": "4.23.1",
+  "use_cache": true,
+  "vocab_size": 150528
+}
+
+
+```
