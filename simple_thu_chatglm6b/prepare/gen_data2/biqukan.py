@@ -6,16 +6,19 @@ import re
 import os 
 import time 
 import concurrent.futures
-
+# pip3 install bs4 lxml
 
 BIQUKAN_SITE_HOST = "https://www.biqukan8.cc/"
 COMMON_HEADERS = {'User-Agent':'Mozilla/5.0 (Linux; Android 4.1.1; Nexus 7 Build/JRO03D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166  Safari/535.19',}
-
-def fetch_request(target_url):
-  target_req = request.Request(url=target_url, headers=COMMON_HEADERS)
-  target_response = request.urlopen(target_req)
-  target_html = target_response.read().decode('gbk', 'ignore')
-  return BeautifulSoup(target_html, 'lxml')
+def fetch_request(target_url, ):
+    try:
+        target_req = request.Request(url=target_url, headers=COMMON_HEADERS)
+        target_response = request.urlopen(target_req)
+        target_html = target_response.read().decode('gbk', 'ignore')
+        return BeautifulSoup(target_html, 'lxml')
+    except:
+        time.sleep(3)
+        return fetch_request(target_url)
 
 
 def get_novel_pager_list(cate_id=1, pager=2):
@@ -85,25 +88,44 @@ def download_novel_chapter_task(chapter_info):
     novel_category = chapter_info["novel_category"]
     # chapter_id = re.match(".*?/(\d+)/$", chapter_url).group(1)
     chapter_num = chapter_info["chapter_num"]
-    novel_content = get_chapter_content(chapter_url)
+    
     novel_save_path = os.path.join(
         NOVAL_SAVE_DIR, 
         novel_category,
-        f"{chapter_info['novel_id']}-{chapter_info['novel_name']}", 
-        f"{chapter_num}-{chapter_name}")
+        f"{chapter_info['novel_id']}-{chapter_info['novel_name']}".replace(' ', "_"), 
+        f"{chapter_num}-{chapter_name}".replace(' ', "_"))
     novel_save_dir = os.path.dirname(novel_save_path)
     if not os.path.exists(novel_save_dir):
-        os.makedirs(novel_save_dir)
-        
-    with open(novel_save_path, "w", encoding="utf-8") as f:
-        f.write(novel_content)
-        f.close()
-        
+        try:
+            os.makedirs(novel_save_dir)
+        except Exception as e2:
+            print(f"File Exsit Muti Thread {e2}")
+    
+    if os.path.exists(novel_save_path):
+        # 文件已经下载，就跳过
+        return novel_save_path
+
+    novel_content = get_chapter_content(chapter_url)
+    try:
+        with open(novel_save_path, "w+", encoding="utf-8") as f:
+            f.write(novel_content)
+            f.close()
+    except Exception as e: 
+        print(f"Error with {e}")  
     return novel_save_path
+
+
+def no_stop_task(chapter_info):
+    try:
+        return download_novel_chapter_task(chapter_info)
+    except Exception as me:
+        print(f"Erorr with {me}")
+        return None 
+
 
 def main(cate_id=1, max_category_pager=200):
     # count = 1 
-    for pager in [i+1 for i in range(max_category_pager)]:
+    for pager in [i+3 for i in range(max_category_pager)]:
         # TODO 获取 novel 列表
         novel_list = get_novel_pager_list(cate_id=cate_id, pager=pager)
         for novel in novel_list:
@@ -120,8 +142,8 @@ def main(cate_id=1, max_category_pager=200):
                     novel_category=novel_category, 
                     novel_id=novel_id, 
                     novel_name=novel_name) for x in chapter_list]
-                with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
-                    tasks = [executor.submit(download_novel_chapter_task, chapter_info) for chapter_info in all_chapter_info]
+                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                    tasks = [executor.submit(no_stop_task, chapter_info) for chapter_info in all_chapter_info]
                     for future in concurrent.futures.as_completed(tasks):
                         result = future.result()
                         print(f"Task returned {result}")
@@ -141,4 +163,4 @@ def test():
 if __name__ == "__main__":
     # print("\n\t\t欢迎使用《笔趣看》小说下载小工具\n\n\t\t作者:Jack-Cui\t时间:2017-05-06\n")
 
-    main(cate_id=1, max_category_pager=10)
+    main(cate_id=1, max_category_pager=200)
