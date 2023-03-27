@@ -70,9 +70,12 @@ tokenized_datasets
 data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
 
 # %%
-# TODO 模型调参和数据输出
+# TRAINING_OUT_PUT_DIR = "test003"
+TRAINING_OUT_PUT_DIR = "test003"
+
+# TODO 模型调参和数据输出, 尝试输出到云盘上。
 args = TrainingArguments(
-    output_dir="test003",
+    output_dir=TRAINING_OUT_PUT_DIR,
     per_device_train_batch_size=1, # 如果在24G显存上的显卡，可以开到4
     per_device_eval_batch_size=1,
     evaluation_strategy="steps",
@@ -85,6 +88,7 @@ args = TrainingArguments(
     lr_scheduler_type="cosine",
     learning_rate=5e-4,
     save_steps=100,
+    save_total_limit=3,
     fp16=True,
     push_to_hub=False,
 )

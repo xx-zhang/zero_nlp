@@ -3,8 +3,8 @@
   "workbench.colorTheme": "GitHub Dark Dimmed",
   "workbench.preferredDarkColorTheme": "GitHub Dark",
   "workbench.preferredLightColorTheme": "GitHub Light",
-  "workbench.productIconTheme": "icons-carbon",
-  "workbench.iconTheme": "icons",
+  "workbench.productIconTheme": "Default",
+  "workbench.iconTheme": "file-icons-mac",
   "workbench.fontAliasing": "antialiased",
   "workbench.sash.size": 12,
   "window.zoomLevel": 0.6, // 放大1.2倍
@@ -24,7 +24,7 @@
   "editor.multiCursorModifier": "ctrlCmd",
   "editor.renderWhitespace": "boundary",
   "editor.suggestSelection": "first",
-  "editor.tabSize": 4,
+  "editor.tabSize": 2,
   "editor.unicodeHighlight.invisibleCharacters": false,
   "editor.codeActionsOnSave": {
     "source.fixAll": false,
@@ -87,7 +87,7 @@
 
     // Custom Some settings
   // python django settings 
-  "python.defaultInterpreterPath": "/usr/local/anaconda3/bin/python",
+  "python.defaultInterpreterPath": "/usr/local/miniconda3/bin/python",
 
   "trunk.autoInit": true,
   "github.gitProtocol": "ssh",

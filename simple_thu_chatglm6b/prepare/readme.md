@@ -15,10 +15,15 @@ vscode
 ## 安装 python3.10和 pytorch
 ```bash
 
-wget -c -N https://repo.anaconda.com/archive/Anaconda3-2023.03-Linux-x86_64.sh && \
-    bash Anaconda3-2023.03-Linux-x86_64.sh -b -p /usr/local/anaconda3
+# wget -c -N https://repo.anaconda.com/archive/Anaconda3-2023.03-Linux-x86_64.sh && \
+#     bash Anaconda3-2023.03-Linux-x86_64.sh -b -p /usr/local/anaconda3
 
-/usr/local/anaconda3/bin/pip install protobuf==3.20.0 transformers==4.27.3 icetk cpm_kernels peft datasets
+wget -c -N https://mirrors.bfsu.edu.cn/anaconda/miniconda/Miniconda3-py310_22.11.1-1-Linux-x86_64.sh  && \
+bash Miniconda3-py310_22.11.1-1-Linux-x86_64.sh -b -p /usr/local/miniconda3
+
+/usr/local/miniconda3/bin/pip install protobuf==3.20.0 transformers==4.27.3 icetk cpm_kernels peft datasets
+
+
 ```
 
 ## 下载数据源
@@ -38,6 +43,23 @@ wget -c -N https://cloud.tsinghua.edu.cn/seafhttp/files/14238f1b-8d56-44fd-8699-
 wget -c -N https://cloud.tsinghua.edu.cn/seafhttp/files/2a5c5a5c-560d-471d-bea1-04a51049fc7a/pytorch_model-00008-of-00008.bin
 
 wget -c -N https://cloud.tsinghua.edu.cn/seafhttp/files/e08d3be3-23c6-449f-9beb-a215cd94b189/ice_text.model
+
+```
+
+
+## 附录
+### 挂载数据盘
+```bash
+
+docker run -it --rm messense/aliyundrive-webdav aliyundrive-webdav qr login
+
+docker run -d --name=aliyundrive-webdav --restart=unless-stopped -p 8080:8080 \
+  -v /etc/aliyundrive-webdav/:/etc/aliyundrive-webdav/ \
+    -e REFRESH_TOKEN='xxxx' \
+    -e WEBDAV_AUTH_USER=admin \
+        -e WEBDAV_AUTH_PASSWORD=password \
+          messense/aliyundrive-webdav
+
 
 ```
 
