@@ -2,7 +2,7 @@
   // Visuals
   "workbench.colorTheme": "GitHub Dark Dimmed",
   "workbench.preferredDarkColorTheme": "GitHub Dark",
-  "workbench.preferredLightColorTheme": "GitHub Light",
+  "workbench.preferredLightColorTheme": "GitHub Dark Dimmed",
   "workbench.productIconTheme": "Default",
   "workbench.iconTheme": "file-icons-mac",
   "workbench.fontAliasing": "antialiased",
